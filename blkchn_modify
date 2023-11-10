@@ -1,0 +1,25 @@
+#!/usr/bin/sh
+
+filename=`basename $1`
+fileexist=0
+if [[ ! -f /tmp/trc/hackathon/$filename ]]; then
+  cp $1 /tmp/trc/hackathon/
+else
+  fileexist=1
+fi
+
+cp $1 /tmp/trc/hackathon/$filename.bkp
+vi $1
+cp $1 /tmp/trc/hackathon/$filename.latest
+if [ $fileexist -eq 1 ]; then
+  count=`./blkmod $filename.latest.meta getcount`
+  diff -e /tmp/trc/hackathon/$filename.bkp $1 > "/tmp/trc/hackathon/$filename.diff.$count"
+  ./blkmod $filename $filename.latest "/tmp/trc/hackathon/$filename.diff.$count" $2 $3
+else
+  diff -e /tmp/trc/hackathon/$filename.bkp $1 > "/tmp/trc/hackathon/$filename.diff.1"
+  ./blkmod $filename $filename.latest "/tmp/trc/hackathon/$filename.diff.1" $2 $3
+fi
+
+rm $filename.diff*
+
+

@@ -1,0 +1,26 @@
+#!/usr/bin/sh
+meta_filename=$1
+filename=$2
+
+if [[ ! -f $meta_filename ]]; then
+  echo "Meta filename not existing ..exiting"
+  exit 1
+fi
+
+./blkverify $1 $2 gendiff
+count=`./blkmod $1 getcount`
+blkcnt=1
+incr_filename="/tmp/trc/hackathon/$filename.incr"
+cp $filename $incr_filename
+echo ""
+while [ $blkcnt -ne $count ]; do
+  latest_filename=$filename.latest.$blkcnt
+  (cat $filename.diff.$blkcnt; echo '1,$p') | ed - $incr_filename > $latest_filename
+  echo "0=0=0=0=0=0=0=0=0=0=0=0=0=0=0=0=0=0=0=0=0=0=0=0=0"
+  ./blkverify verify $meta_filename $latest_filename $blkcnt
+  cp $latest_filename $incr_filename
+  let blkcnt=blkcnt+1
+  echo "0=0=0=0=0=0=0=0=0=0=0=0=0=0=0=0=0=0=0=0=0=0=0=0=0"
+  echo ""
+done
+
